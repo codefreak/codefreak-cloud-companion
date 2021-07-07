@@ -1,0 +1,38 @@
+name: CI
+
+on: [push, pull_request, release]
+
+jobs:
+  main:
+    runs-on: ubuntu-20.04
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+        with:
+          # Ensures all refs and tags are fetched so "git describe --always" is working as expected
+          fetch-depth: 0
+
+      # A workaround for annotated tags with actions/checkout@v2
+      # see https://github.com/actions/checkout/issues/290
+      - name: Fetch Tags correctly
+        run: git fetch --force --tags
+
+      - name: Cache gradle dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Run unit tests
+        run: |
+          ./gradlew check jibDockerBuild -x bootJar
+
+      - name: Prepare cache
+        run: |
+          rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+          rm -fr $HOME/.gradle/caches/*/plugin-resolution/
