@@ -31,8 +31,9 @@ The filename can also contain slashes to upload to sub-directories.
 If the sub-directories do not exist the will be created.
 If part of the sub-directory are existing files an exception will be thrown.
 Existing files will be overridden without further questioning.
+The server responds with `201 Created` in case everything was uploaded properly.
 
-Example:
+Example request:
 
 ```
 POST /files HTTP/1.1
@@ -54,7 +55,11 @@ Content-Type: application/x-object
 
 ### `GET /files/{filepath}`
 Allows downloading a file specified by `{filepath}`, e.g. `/files/main.c`.
-The will serve the workspace file (if it exists) with
+The will serve the workspace file (if it exists) with the one of the following mime-types:
+* `text/plain` for all textual files
+* The proper mime type for images (mime starts with `image/*`)
+* `application/octet-stream` for everything else
+
 
 
 ## Testing
