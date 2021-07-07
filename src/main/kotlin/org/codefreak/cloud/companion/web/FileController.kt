@@ -14,6 +14,7 @@ import org.springframework.core.io.Resource
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.codec.multipart.FilePart
+import org.springframework.http.codec.multipart.Part
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -44,11 +45,20 @@ class FileController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    fun uploadFiles(@RequestPart files: Flux<FilePart>): Mono<Void> {
+    fun uploadFiles(@RequestPart files: Flux<Part>): Mono<Void> {
         return files
             .flatMap {
-                log.debug("Saving uploaded file ${it.filename()}")
-                fileService.saveUpload(it)
+                if (it !is FilePart) {
+                    Flux.error(
+                        ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "'files' form data should be a file upload with a proper filename specified"
+                        )
+                    )
+                } else {
+                    log.debug("Saving uploaded file ${it.filename()}")
+                    fileService.saveUpload(it)
+                }
             }
             .doOnError(FileServiceException::class.java) { e ->
                 throw ResponseStatusException(

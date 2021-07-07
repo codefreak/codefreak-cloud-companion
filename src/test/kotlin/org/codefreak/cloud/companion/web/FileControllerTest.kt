@@ -122,7 +122,17 @@ internal class FileControllerTest {
         assert(fileService.resolve("/sub").isRegularFile())
     }
 
-    private fun uploadFormData(fileName: String, content: String): BodyInserters.MultipartInserter {
+    @Test
+    fun `return 400 if uploaded file has no filename specified`() {
+        client.post()
+            .uri("/files")
+            .body(uploadFormData(null, "Hello World"))
+            .exchange()
+            .expectStatus()
+            .isBadRequest
+    }
+
+    private fun uploadFormData(fileName: String?, content: String): BodyInserters.MultipartInserter {
         return BodyInserters.fromMultipartData(
             MultipartBodyBuilder()
                 .apply {
@@ -130,7 +140,11 @@ internal class FileControllerTest {
                         "files",
                         ByteArrayResource(content.encodeToByteArray()),
                         MediaType.TEXT_PLAIN
-                    ).filename(fileName)
+                    ).also {
+                        if (fileName != null) {
+                            it.filename(fileName)
+                        }
+                    }
                 }
                 .build()
         )
