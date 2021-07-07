@@ -9,7 +9,9 @@ buildscript {
 plugins {
     id("org.springframework.boot") version "2.5.2"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
+    id("org.jetbrains.kotlin.kapt") version "1.5.20"
     id("com.google.cloud.tools.jib") version "3.1.1"
+    id("com.diffplug.spotless") version "5.14.1"
     kotlin("jvm") version "1.5.20"
     kotlin("plugin.spring") version "1.5.20"
 }
@@ -70,5 +72,11 @@ jib {
         pluginExtension {
             implementation = "com.google.cloud.tools.jib.gradle.extension.springboot.JibSpringBootExtension"
         }
+    }
+}
+
+spotless {
+    kotlin {
+        ktlint()
     }
 }

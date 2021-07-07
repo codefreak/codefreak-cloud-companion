@@ -1,5 +1,9 @@
 package org.codefreak.cloud.companion.web
 
+import kotlin.io.path.exists
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.writeBytes
+import kotlin.io.path.writeText
 import org.apache.commons.io.FileUtils
 import org.codefreak.cloud.companion.CompanionConfig
 import org.codefreak.cloud.companion.FileService
@@ -17,7 +21,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.expectBody
 import org.springframework.web.reactive.function.BodyInserters
-import kotlin.io.path.*
 
 @ExtendWith(SpringExtension::class)
 @WebFluxTest(controllers = [FileController::class])

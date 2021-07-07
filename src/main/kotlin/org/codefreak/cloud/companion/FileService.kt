@@ -1,5 +1,10 @@
 package org.codefreak.cloud.companion
 
+import java.nio.file.FileSystemException
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import kotlin.io.path.exists
 import org.apache.tika.Tika
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -7,11 +12,6 @@ import org.springframework.http.MediaType
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
-import java.nio.file.FileSystemException
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
-import kotlin.io.path.exists
 
 @Service
 class FileService(
@@ -32,7 +32,7 @@ class FileService(
                 if (parentDir != null && !parentDir.exists()) {
                     try {
                         Files.createDirectories(parentDir)
-                    } catch(e: FileSystemException) {
+                    } catch (e: FileSystemException) {
                         throw FileServiceException("Could not create parent dirs of ${file.filename()}: ${e.message}")
                     }
                 }

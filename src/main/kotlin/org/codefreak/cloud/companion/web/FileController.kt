@@ -1,5 +1,10 @@
 package org.codefreak.cloud.companion.web
 
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.exists
+import kotlin.io.path.inputStream
+import kotlin.io.path.isReadable
+import kotlin.io.path.isRegularFile
 import org.codefreak.cloud.companion.FileService
 import org.codefreak.cloud.companion.FileServiceException
 import org.slf4j.LoggerFactory
@@ -9,13 +14,18 @@ import org.springframework.core.io.Resource
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.codec.multipart.FilePart
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestPart
+import org.springframework.web.bind.annotation.ResponseStatus
+import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.reactive.HandlerMapping
 import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import kotlin.io.path.*
 
 /**
  * URL route prefix for files
