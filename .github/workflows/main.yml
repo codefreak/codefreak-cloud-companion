@@ -47,8 +47,8 @@ jobs:
 
       - name: Deploy master as latest
         if: github.ref == 'refs/heads/master'
+        # This weird expression converts the repository name to lowercase
+        # https://github.community/t/additional-function-s-lowercase-uppercase/140632/2
         run: |
-          # This weird expression converts the repository name to lowercase
-          # https://github.community/t/additional-function-s-lowercase-uppercase/140632/2
-          echo "DOCKER_REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
+          export DOCKER_REPO="${GITHUB_REPOSITORY,,}"
           docker push ghcr.io/${DOCKER_REPO}
