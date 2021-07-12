@@ -61,12 +61,13 @@ tasks.withType<Test> {
 
 jib {
     to {
-        image = "codefreak/workspace-companion"
+        image = "ghcr.io/henningcash/codefreak-cloud-companion"
     }
     container {
         volumes = listOf(
             "/code"
         )
+        labels.put("org.opencontainers.image.source", "https://github.com/HenningCash/codefreak-cloud-companion")
     }
     pluginExtensions {
         pluginExtension {

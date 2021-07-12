@@ -69,7 +69,7 @@ The will serve the workspace file (if it exists) with the one of the following m
 
 ## Building
 To build the container image we use Google's Jib.
-The image will be built to your local Docker daemon as `codefreak/workspace-companion` with the following command:
+The image will be built to your local Docker daemon as `ghcr.io/henningcash/codefreak-cloud-companion` with the following command:
 ```shell
 ./gradlew jibDockerBuild
 ```
