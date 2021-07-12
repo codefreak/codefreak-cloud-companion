@@ -6,8 +6,7 @@ GraphQL is used for control messages and REST for native file upload/download.
 The application is written in Kotlin based on Spring Boot, WebFlux (Java RX) and Java GraphQL.
 It is shipped as self-contained container image that can be run on Docker, Kubernetes etc.
 
-Features/Purposes:
-* Listing workspace files
+Current Features:
 * Download/Upload files
 
 ## Context
