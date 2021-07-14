@@ -1,5 +1,6 @@
 package org.codefreak.cloud.companion.web
 
+import java.net.URLDecoder
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.exists
 import kotlin.io.path.inputStream
@@ -106,9 +107,12 @@ class FileController {
      */
     private fun extractFilePath(exchange: ServerWebExchange): String {
         val fullPath = exchange.getAttribute<String>(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE)
-        if (fullPath == null || !fullPath.startsWith(FILES_PATH_PREFIX)) {
+            ?: throw IllegalArgumentException("Full path is missing from request")
+        val decodedPath = URLDecoder.decode(fullPath, "utf-8")
+        if (!decodedPath.startsWith(FILES_PATH_PREFIX)) {
             throw IllegalArgumentException("Current path does not start with $FILES_PATH_PREFIX")
         }
-        return fullPath.substring(FILES_PATH_PREFIX.length)
+        // Path is still url-encoded, so encoded chars like %20 have to be replaced
+        return decodedPath.substring(FILES_PATH_PREFIX.length)
     }
 }

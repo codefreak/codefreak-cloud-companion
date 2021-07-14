@@ -54,6 +54,20 @@ internal class FileControllerTest {
     }
 
     @Test
+    fun `can download existing files with whitespaces properly`() {
+        fileService.resolve("/test space.txt").writeText("Hello World")
+        client.get()
+            .uri("/files/test space.txt")
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectHeader()
+            .contentType("text/plain;charset=utf-8")
+            .expectBody<String>()
+            .isEqualTo("Hello World")
+    }
+
+    @Test
     fun `serves images with image mime type`() {
         // jpeg signature ("magic number")
         fileService.resolve("/file.jpg").writeBytes("FFD8FFDB".chunked(2).map { it.toInt(16).toByte() }.toByteArray())
@@ -97,6 +111,17 @@ internal class FileControllerTest {
             .expectStatus()
             .isCreated
         assert(fileService.resolve("/file123.txt").exists())
+    }
+
+    @Test
+    fun `can upload new files with whitespaces`() {
+        client.post()
+            .uri("/files")
+            .body(uploadFormData("file test.txt", "Hello World"))
+            .exchange()
+            .expectStatus()
+            .isCreated
+        assert(fileService.resolve("/file test.txt").exists())
     }
 
     @Test
