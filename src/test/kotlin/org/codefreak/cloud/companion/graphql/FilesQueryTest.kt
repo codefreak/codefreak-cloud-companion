@@ -1,10 +1,12 @@
 package org.codefreak.cloud.companion.graphql
 
+import kotlin.io.path.createDirectories
 import kotlin.io.path.writeText
 import org.apache.commons.io.FileUtils
 import org.codefreak.cloud.companion.FileService
 import org.hamcrest.Matchers
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
@@ -25,6 +27,11 @@ internal class FilesQueryTest(
     @Autowired private val testClient: WebTestClient,
     @Autowired private val fileService: FileService
 ) {
+
+    @BeforeEach
+    fun setup() {
+        fileService.resolve("/").createDirectories()
+    }
 
     @AfterEach
     fun tearDown() {

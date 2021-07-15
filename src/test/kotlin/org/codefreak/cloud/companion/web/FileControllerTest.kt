@@ -1,5 +1,6 @@
 package org.codefreak.cloud.companion.web
 
+import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.writeBytes
@@ -8,6 +9,7 @@ import org.apache.commons.io.FileUtils
 import org.codefreak.cloud.companion.CompanionConfig
 import org.codefreak.cloud.companion.FileService
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,6 +34,11 @@ internal class FileControllerTest {
 
     @Autowired
     lateinit var fileService: FileService
+
+    @BeforeEach
+    fun setup() {
+        fileService.resolve("/").createDirectories()
+    }
 
     @AfterEach
     fun tearDown() {
