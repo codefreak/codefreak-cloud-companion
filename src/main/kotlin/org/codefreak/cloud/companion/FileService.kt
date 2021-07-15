@@ -1,17 +1,30 @@
 package org.codefreak.cloud.companion
 
+import java.nio.file.FileSystem
 import java.nio.file.FileSystemException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.nio.file.StandardWatchEventKinds
+import java.nio.file.WatchEvent
+import java.nio.file.WatchKey
 import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
 import org.apache.tika.Tika
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.core.scheduler.Schedulers
+
+private val DEFAULT_WATCH_EVENT_KINDS = arrayOf(
+    StandardWatchEventKinds.ENTRY_CREATE,
+    StandardWatchEventKinds.ENTRY_MODIFY,
+    StandardWatchEventKinds.ENTRY_DELETE
+)
 
 @Service
 class FileService(
@@ -19,9 +32,41 @@ class FileService(
     @Value("#{config.projectFilesPath}") basePathString: String
 ) {
     private val basePath = Paths.get(basePathString)
+    val fileSystem: FileSystem = basePath.fileSystem
 
     fun resolve(path: String): Path {
         return basePath.resolve(sanitizePath(path))
+    }
+
+    fun relativePath(path: Path): String {
+        return "/${basePath.relativize(path)}"
+    }
+
+    /**
+     * Watch a directory for events using nio's WatchService.
+     * This creates a Flux which emits new WatchEvents.
+     * The WatchService will be closed when the subscription ends.
+     */
+    fun watchDirectory(path: String): Flux<WatchEvent<*>> {
+        val directory = resolve(path)
+        if (!directory.isDirectory()) {
+            return Flux.error(IllegalArgumentException("$directory is not a directory"))
+        }
+
+        return Mono.fromCallable {
+            fileSystem.newWatchService().also {
+                directory.register(it, DEFAULT_WATCH_EVENT_KINDS)
+            }
+        }.flatMapMany { watchService ->
+            Flux.generate<WatchKey> { it.next(watchService.take()) }
+                .subscribeOn(Schedulers.boundedElastic())
+                .doOnCancel { watchService.close() }
+                .doOnDiscard(WatchKey::class.java) { it.reset() }
+                .flatMap {
+                    it.reset()
+                    Flux.fromIterable(it.pollEvents())
+                }
+        }
     }
 
     fun saveUpload(file: FilePart): Mono<Void> {

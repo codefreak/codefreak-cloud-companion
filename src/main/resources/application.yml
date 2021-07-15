@@ -20,3 +20,7 @@ management:
       enabled: true
     livenessstate:
       enabled: true
+
+graphql:
+  packages:
+    - "org.codefreak.cloud.companion"

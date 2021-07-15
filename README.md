@@ -8,6 +8,7 @@ It is shipped as self-contained container image that can be run on Docker, Kuber
 
 Current Features:
 * Download/Upload files
+* List and watch project files on the server
 
 ## Context
 The companion is used for Code FREAK's *Cloud Workspaces* feature which allows writing code in your browser and running
@@ -16,12 +17,17 @@ Each user receives its own "workspace" on the server which is created from multi
 
 ## Running locally
 The companion is a standard Spring Boot web application which can be run locally for development/testing.
+Please copy the file `src/main/resources/application-dev.yml.dist` to `src/main/resources/application-dev.yml`. 
 To start the webserver on port 8080 (default) run the following command:
 ```shell
 ./gradlew bootRun
 ```
 
 ## Endpoints
+
+### GraphQL (`/graphql`, `/subscriptions`)
+The GraphQL server is available at `/graphql` and `/subscriptions`.
+During development, you can use the playground for testing at `/playground`.
 
 ### `POST /files`
 Expects a `multipart/form-data` request with one or multiple field with the name `files`.
