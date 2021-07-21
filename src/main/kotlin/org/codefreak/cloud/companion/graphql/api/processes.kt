@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import org.codefreak.cloud.companion.graphql.model.Process as ProcessModel
+import reactor.core.publisher.Flux
 
 @Component
 class ProcessMutation : Mutation {
@@ -48,9 +49,10 @@ class ProcessSubscription : Subscription {
     @Autowired
     private lateinit var processManager: ProcessManager
 
-    fun waitForProcess(id: UUID): Mono<Int> {
+    fun waitForProcess(id: UUID): Flux<Int> {
         return processManager.getProcess(id)
             .waitForMono()
+            .flatMapMany { Flux.just(it) }
             .subscribeOn(Schedulers.boundedElastic())
     }
 }
