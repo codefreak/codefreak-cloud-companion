@@ -10,7 +10,7 @@ class CorsConfiguration : WebFluxConfigurer {
         corsRegistry.addMapping("/**")
             .allowedOrigins("*")
             .allowedMethods("GET", "POST", "OPTIONS")
-            .allowedHeaders("Authorization")
+            .allowedHeaders("Authorization", "Content-Type")
             .allowCredentials(false)
             .maxAge(3600)
     }
