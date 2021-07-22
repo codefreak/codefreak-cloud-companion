@@ -5,7 +5,9 @@ companion:
   # Set this to an absolute path on your computer
   projectFilesPath: tmp
 
-graphql:
-  playground:
-    # Enable the GraphQL playground (reachable at /playground)
-    enabled: true
+spring:
+  graphql:
+    graphiql:
+      # Enable the GraphQL playground (reachable at /playground)
+      path: /playground
+

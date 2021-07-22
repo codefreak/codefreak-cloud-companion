@@ -29,12 +29,13 @@ configurations {
 repositories {
     mavenCentral()
     maven(url = "https://packages.jetbrains.team/maven/p/ij/intellij-dependencies")
+    maven(url = "https://repo.spring.io/snapshot") // for graphql-spring-boot-starter until it's in stable
 }
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("com.expediagroup:graphql-kotlin-spring-server:4.1.1")
+    implementation("org.springframework.experimental:graphql-spring-boot-starter:1.0.0-SNAPSHOT")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
     implementation("org.jetbrains.kotlin:kotlin-reflect")

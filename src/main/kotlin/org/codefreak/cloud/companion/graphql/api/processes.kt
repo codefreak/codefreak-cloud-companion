@@ -1,21 +1,48 @@
 package org.codefreak.cloud.companion.graphql.api
 
-import com.expediagroup.graphql.server.operations.Mutation
-import com.expediagroup.graphql.server.operations.Subscription
 import com.pty4j.PtyProcess
 import com.pty4j.WinSize
+import graphql.schema.idl.RuntimeWiring
 import java.util.UUID
 import org.codefreak.cloud.companion.ProcessManager
 import org.codefreak.cloud.companion.graphql.model.Process as ProcessModel
 import org.codefreak.cloud.companion.waitForMono
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.graphql.boot.RuntimeWiringBuilderCustomizer
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 
 @Component
-class ProcessMutation : Mutation {
+class ProcessDataWiring(
+    private val processMutation: ProcessMutation,
+    private val processSubscription: ProcessSubscription
+) : RuntimeWiringBuilderCustomizer {
+    override fun customize(builder: RuntimeWiring.Builder) {
+        builder.type("Mutation") { wiring ->
+            wiring.dataFetcher("startProcess") { env ->
+                processMutation.startProcess(env.getArgument("cmd"))
+            }.dataFetcher("killProcess") { env ->
+                processMutation.killProcess(env.getArgument("id"))
+            }.dataFetcher("resizeProcess") { env ->
+                processMutation.resizeProcess(
+                    env.getArgument("id"),
+                    env.getArgument("cols"),
+                    env.getArgument("rows")
+                )
+            }
+        }
+        builder.type("Subscription") { wiring ->
+            wiring.dataFetcher("waitForProcess") { env ->
+                processSubscription.waitForProcess(env.getArgument("id"))
+            }
+        }
+    }
+}
+
+@Component
+class ProcessMutation {
     @Autowired
     private lateinit var processManager: ProcessManager
 
@@ -45,7 +72,7 @@ class ProcessMutation : Mutation {
 }
 
 @Component
-class ProcessSubscription : Subscription {
+class ProcessSubscription {
     @Autowired
     private lateinit var processManager: ProcessManager
 

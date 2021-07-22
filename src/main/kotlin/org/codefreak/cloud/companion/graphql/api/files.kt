@@ -1,7 +1,6 @@
 package org.codefreak.cloud.companion.graphql.api
 
-import com.expediagroup.graphql.server.operations.Query
-import com.expediagroup.graphql.server.operations.Subscription
+import graphql.schema.idl.RuntimeWiring
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
@@ -11,12 +10,32 @@ import org.codefreak.cloud.companion.graphql.model.FileSystemEvent
 import org.codefreak.cloud.companion.graphql.model.FileSystemEventType
 import org.codefreak.cloud.companion.graphql.model.FileSystemNode
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.graphql.boot.RuntimeWiringBuilderCustomizer
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Component
-class FilesQuery : Query {
+class FilesDataWiring(
+    private val filesQuery: FilesQuery,
+    private val filesSubscription: FilesSubscription
+) : RuntimeWiringBuilderCustomizer {
+    override fun customize(builder: RuntimeWiring.Builder) {
+        builder.type("Query") { wiring ->
+            wiring.dataFetcher("listFiles") { env ->
+                filesQuery.listFiles(env.getArgument("path"))
+            }
+        }
+        builder.type("Subscription") { wiring ->
+            wiring.dataFetcher("watchFiles") { env ->
+                filesSubscription.watchFiles(env.getArgument("path"))
+            }
+        }
+    }
+}
+
+@Component
+class FilesQuery {
     @Autowired
     lateinit var fileService: FileService
 
@@ -39,7 +58,7 @@ class FilesQuery : Query {
 }
 
 @Component
-class FilesSubscription : Subscription {
+class FilesSubscription {
     @Autowired
     lateinit var fileService: FileService
 

@@ -1,4 +1,9 @@
 spring:
+  graphql:
+    graphiql:
+      path: /playground
+    websocket:
+      path: /graphql
   profiles:
     active: prod
 
@@ -21,6 +26,4 @@ management:
     livenessstate:
       enabled: true
 
-graphql:
-  packages:
-    - "org.codefreak.cloud.companion"
+
