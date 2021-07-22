@@ -1,6 +1,7 @@
 package org.codefreak.cloud.companion
 
 import com.pty4j.PtyProcessBuilder
+import java.io.OutputStream
 import java.util.UUID
 import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.stereotype.Service
@@ -9,25 +10,30 @@ import reactor.core.scheduler.Schedulers
 
 @Service
 class ProcessManager {
-    private val processMap: MutableMap<UUID, Pair<Process, Flux<DataBuffer>>> = mutableMapOf()
+    private val processMap: MutableMap<UUID, Process> = mutableMapOf()
+    private val outputStreamCache: MutableMap<UUID, Flux<DataBuffer>> = mutableMapOf()
 
     fun createProcess(cmd: List<String>): UUID {
-        val process = generateProcess(cmd)
-        val output = process.getInputStreamFlux()
-            .subscribeOn(Schedulers.boundedElastic())
-            .cache()
         val uid = UUID.randomUUID()
-        processMap[uid] = Pair(process, output)
-        println("Started new process with id=$uid")
+        processMap[uid] = generateProcess(cmd)
         return uid
     }
 
     fun getProcess(uid: UUID): Process {
-        return processMap[uid]?.first ?: throw IllegalArgumentException("There is no process $uid")
+        return processMap[uid] ?: throw IllegalArgumentException("There is no process $uid")
     }
 
-    fun getOutput(uid: UUID): Flux<DataBuffer> {
-        return processMap[uid]?.second ?: throw IllegalArgumentException("There is no process $uid")
+    fun getStdout(uid: UUID): Flux<DataBuffer> {
+        return outputStreamCache.computeIfAbsent(uid) {
+            getProcess(uid)
+                .getInputStreamFlux()
+                .subscribeOn(Schedulers.boundedElastic())
+                .cache()
+        }
+    }
+
+    fun getStdin(uid: UUID): OutputStream {
+        return getProcess(uid).outputStream
     }
 
     private fun generateProcess(cmd: List<String>): Process {

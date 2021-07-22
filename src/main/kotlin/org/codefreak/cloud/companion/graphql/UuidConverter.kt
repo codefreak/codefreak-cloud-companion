@@ -1,6 +1,5 @@
 package org.codefreak.cloud.companion.graphql
 
-
 import graphql.language.StringValue
 import graphql.schema.Coercing
 import graphql.schema.CoercingParseLiteralException

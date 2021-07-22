@@ -6,13 +6,13 @@ import com.pty4j.PtyProcess
 import com.pty4j.WinSize
 import java.util.UUID
 import org.codefreak.cloud.companion.ProcessManager
+import org.codefreak.cloud.companion.graphql.model.Process as ProcessModel
 import org.codefreak.cloud.companion.waitForMono
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
-import org.codefreak.cloud.companion.graphql.model.Process as ProcessModel
-import reactor.core.publisher.Flux
 
 @Component
 class ProcessMutation : Mutation {
