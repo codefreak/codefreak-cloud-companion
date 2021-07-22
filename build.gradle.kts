@@ -50,6 +50,8 @@ dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    testImplementation("org.springframework.graphql:spring-graphql-test:1.0.0-SNAPSHOT")
     testImplementation("junit:junit:4.13.2")
     testImplementation("io.projectreactor:reactor-test")
 }

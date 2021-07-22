@@ -1,41 +1,23 @@
 package org.codefreak.cloud.companion.graphql
 
+import java.time.Duration
 import kotlin.io.path.createDirectories
+import kotlin.io.path.createFile
 import kotlin.io.path.writeText
 import org.apache.commons.io.FileUtils
 import org.codefreak.cloud.companion.FileService
-import org.hamcrest.Matchers
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.http.MediaType
-import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.junit.jupiter.SpringExtension
-import org.springframework.test.web.reactive.server.WebTestClient
+import reactor.test.StepVerifier
 
-@SpringBootTest
-@AutoConfigureWebTestClient
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@ActiveProfiles("test")
-@ExtendWith(SpringExtension::class)
 internal class FilesQueryTest(
-    @Autowired private val testClient: WebTestClient,
     @Autowired private val fileService: FileService
-) {
+) : BasicGraphqlTest() {
 
     @BeforeEach
     fun setup() {
         fileService.resolve("/").createDirectories()
-    }
-
-    @AfterEach
-    fun tearDown() {
-        // ensure clean directory after each test
         FileUtils.cleanDirectory(fileService.resolve("/").toFile())
     }
 
@@ -43,13 +25,25 @@ internal class FilesQueryTest(
     fun `list files delivers files`() {
         fileService.resolve("/test").writeText("Hello World")
         fileService.resolve("/test2").writeText("Hello World")
-        testClient.post()
-            .uri("/graphql")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType("application", "graphql"))
-            .bodyValue("query { listFiles(path: \"/\"){ __typename, path } }")
-            .exchange()
-            .expectBody()
-            .jsonPath("$.data.listFiles").value(Matchers.hasSize<Any>(2))
+        graphQlTester.query("{ listFiles(path: \"/\"){ __typename, path } }")
+            .execute()
+            .path("listFiles..path")
+            .entityList(String::class.java)
+            .contains("/test", "/test2")
+    }
+
+    @Test
+    fun `modifying files notifies correctly`() {
+        val modifiedFiles = graphQlTester.query("subscription { watchFiles(path: \"/\"){ path, type } }")
+            .executeSubscription()
+            .toFlux()
+
+        StepVerifier.create(modifiedFiles)
+            .then { fileService.resolve("/test").createFile() }
+            .consumeNextWith { it.path("watchFiles.type").matchesJson("\"CREATED\"") }
+            .then { fileService.resolve("/test").writeText("foo") }
+            .consumeNextWith { it.path("watchFiles.type").matchesJson("\"MODIFIED\"") }
+            .thenCancel()
+            .verify(Duration.ofSeconds(60))
     }
 }
