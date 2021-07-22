@@ -25,9 +25,11 @@ To start the webserver on port 8080 (default) run the following command:
 
 ## Endpoints
 
-### GraphQL (`/graphql`, `/subscriptions`)
-The GraphQL server is available at `/graphql` and `/subscriptions`.
-During development, you can use the playground for testing at `/playground`.
+### GraphQL (`/graphql`)
+The GraphQL server is available at `/graphql`.
+During development, you can use the GraphiQL playground for testing at `/playground`.
+The server accepts both `POST` and Websocket queries. 
+The GQL websocket protocol is based on [`graphql-ws`](https://github.com/enisdenjo/graphql-ws)!
 
 ### `POST /files`
 Expects a `multipart/form-data` request with one or multiple field with the name `files`.
