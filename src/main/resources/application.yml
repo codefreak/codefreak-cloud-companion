@@ -2,6 +2,7 @@ spring:
   graphql:
     graphiql:
       path: /playground
+      enabled: false
     websocket:
       path: /graphql
   profiles:
