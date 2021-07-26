@@ -9,5 +9,4 @@ spring:
   graphql:
     graphiql:
       # Enable the GraphQL playground (reachable at /playground)
-      path: /playground
-
+      enabled: true
