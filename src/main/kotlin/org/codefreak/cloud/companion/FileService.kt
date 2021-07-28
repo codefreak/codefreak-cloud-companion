@@ -46,6 +46,11 @@ class FileService(
      * Watch a directory for events using nio's WatchService.
      * This creates a Flux which emits new WatchEvents.
      * The WatchService will be closed when the subscription ends.
+     *
+     * Warning: This seems to be quite slow on MacOS because there is no
+     * native watching implementation by default. Changes are detected by polling instead:
+     * https://stackoverflow.com/a/11182515/1526257.
+     * So notifications for changes may take some time if you are running this on MacOS.
      */
     fun watchDirectory(path: String): Flux<WatchEvent<*>> {
         val directory = resolve(path)
