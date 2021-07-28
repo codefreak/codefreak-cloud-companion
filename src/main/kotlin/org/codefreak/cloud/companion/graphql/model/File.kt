@@ -6,5 +6,5 @@ class File(
     override val path: String,
     private val file: File
 ) : FileSystemNode {
-    fun size(): Int = file.length().toInt()
+    val size: Int by lazy { file.length().toInt() }
 }
