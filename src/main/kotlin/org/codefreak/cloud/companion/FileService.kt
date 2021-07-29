@@ -1,5 +1,8 @@
 package org.codefreak.cloud.companion
 
+import java.io.OutputStream
+import java.io.PipedInputStream
+import java.io.PipedOutputStream
 import java.nio.file.FileSystem
 import java.nio.file.FileSystemException
 import java.nio.file.Files
@@ -10,9 +13,18 @@ import java.nio.file.WatchEvent
 import java.nio.file.WatchKey
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
+import kotlin.io.path.isSameFileAs
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream
+import org.apache.commons.compress.utils.IOUtils
+import org.apache.commons.io.FileUtils
 import org.apache.tika.Tika
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.io.buffer.DataBuffer
+import org.springframework.core.io.buffer.DataBufferFactory
+import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.http.MediaType
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Service
@@ -25,6 +37,13 @@ private val DEFAULT_WATCH_EVENT_KINDS = arrayOf(
     StandardWatchEventKinds.ENTRY_MODIFY,
     StandardWatchEventKinds.ENTRY_DELETE
 )
+
+class PosixTarArchiveOutputStream(out: OutputStream) : TarArchiveOutputStream(out) {
+    init {
+        setLongFileMode(LONGFILE_POSIX)
+        setBigNumberMode(BIGNUMBER_STAR)
+    }
+}
 
 @Service
 class FileService(
@@ -92,6 +111,59 @@ class FileService(
             }
     }
 
+    fun createTar(bufferFactory: DataBufferFactory): Flux<DataBuffer> {
+        return Flux.create { sink ->
+            val buffer = bufferFactory.allocateBuffer()
+            buffer.asOutputStream().use { bufferStream ->
+                val outputStream = PosixTarArchiveOutputStream(bufferStream)
+                Files.walk(resolve("/"))
+                    // exclude root directory
+                    .filter { !it.isSameFileAs(basePath) }
+                    // TODO: symlinks are created as regular files
+                    .forEach { file ->
+                        val entry = outputStream.createArchiveEntry(file, relativePath(file).trimStart('/'))
+                        outputStream.putArchiveEntry(entry)
+                        if (!file.isDirectory()) {
+                            IOUtils.copy(file.toFile(), outputStream)
+                        }
+                        // TODO: we could emit a new data buffer after every entry instead of the full archive
+                        outputStream.closeArchiveEntry()
+                    }
+                outputStream.finish()
+            }
+            sink.next(buffer)
+            sink.complete()
+        }
+    }
+
+    fun overrideFilesByTar(tarArchive: Flux<DataBuffer>): Mono<Void> {
+        return tarFluxFromDataBuffer(tarArchive)
+            .doFirst { purgeFiles() }
+            .map { (archiveStream, entry) -> extractEntryToFiles(archiveStream, entry) }
+            .then()
+    }
+
+    fun purgeFiles() {
+        FileUtils.cleanDirectory(resolve("/").toFile())
+    }
+
+    private fun extractEntryToFiles(archiveInputStream: TarArchiveInputStream, entry: TarArchiveEntry) {
+        if (entry.isDirectory) {
+            Files.createDirectories(resolve(entry.name))
+        } else {
+            val name = resolve(entry.name)
+            val parentDir = name.parent
+            if (parentDir != null && !parentDir.exists()) {
+                try {
+                    Files.createDirectories(parentDir)
+                } catch (e: FileSystemException) {
+                    throw FileServiceException("Could not create parent dirs of $name: ${e.message}")
+                }
+            }
+            Files.newOutputStream(name).use { IOUtils.copy(archiveInputStream, it) }
+        }
+    }
+
     /**
      * Get the mime type for a file that should be used when delivering
      * a file to the browser
@@ -107,6 +179,30 @@ class FileService(
             mime.startsWith("text/") -> MediaType.parseMediaType("text/plain;charset=utf-8")
             // force download for everything else
             else -> MediaType.APPLICATION_OCTET_STREAM
+        }
+    }
+
+    private fun tarFluxFromDataBuffer(dataBuffers: Flux<DataBuffer>): Flux<Pair<TarArchiveInputStream, TarArchiveEntry>> {
+        return Flux.from {
+            val outputStream = PipedOutputStream()
+            val archiveStream = TarArchiveInputStream(PipedInputStream(outputStream))
+
+            val reader = DataBufferUtils.write(dataBuffers, outputStream)
+                .doFinally { outputStream.close() }
+                .subscribeOn(Schedulers.boundedElastic())
+                .subscribe(DataBufferUtils.releaseConsumer())
+
+            Flux.generate<Pair<TarArchiveInputStream, TarArchiveEntry>> { sink ->
+                val next = archiveStream.nextTarEntry
+                if (next != null) {
+                    sink.next(Pair(archiveStream, next))
+                } else {
+                    sink.complete()
+                }
+            }
+                .doFinally { reader.dispose() }
+                .subscribeOn(Schedulers.boundedElastic())
+                .subscribe(it)
         }
     }
 

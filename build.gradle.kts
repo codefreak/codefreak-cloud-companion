@@ -43,6 +43,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 
     implementation("commons-io:commons-io:2.10.0")
+    implementation("org.apache.commons:commons-compress:1.21")
     implementation("org.apache.tika:tika-core:1.26")
     // https://packages.jetbrains.team/maven/p/ij/intellij-dependencies/org/jetbrains/pty4j/pty4j/
     implementation("org.jetbrains.pty4j:pty4j:0.11.5")
@@ -69,7 +70,7 @@ tasks.withType<Test> {
 
 jib {
     from {
-        image = "replco/polygott:c82c08a720ba1fd537d4fba17eed883ab87c0fd7"
+        //image = "replco/polygott:c82c08a720ba1fd537d4fba17eed883ab87c0fd7"
     }
     to {
         image = "ghcr.io/henningcash/codefreak-cloud-companion"

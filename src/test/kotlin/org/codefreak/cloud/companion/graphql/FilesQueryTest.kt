@@ -4,7 +4,6 @@ import java.time.Duration
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
 import kotlin.io.path.writeText
-import org.apache.commons.io.FileUtils
 import org.codefreak.cloud.companion.FileService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -18,7 +17,7 @@ internal class FilesQueryTest(
     @BeforeEach
     fun setup() {
         fileService.resolve("/").createDirectories()
-        FileUtils.cleanDirectory(fileService.resolve("/").toFile())
+        fileService.purgeFiles()
     }
 
     @Test
