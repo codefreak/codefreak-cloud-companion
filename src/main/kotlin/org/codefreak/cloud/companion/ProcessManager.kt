@@ -3,6 +3,8 @@ package org.codefreak.cloud.companion
 import com.pty4j.PtyProcessBuilder
 import java.io.OutputStream
 import java.util.UUID
+import kotlin.io.path.absolutePathString
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
@@ -12,6 +14,9 @@ import reactor.core.scheduler.Schedulers
 class ProcessManager {
     private val processMap: MutableMap<UUID, Process> = mutableMapOf()
     private val outputStreamCache: MutableMap<UUID, Flux<DataBuffer>> = mutableMapOf()
+
+    @Autowired
+    private lateinit var fileService: FileService
 
     fun createProcess(cmd: List<String>): UUID {
         val uid = UUID.randomUUID()
@@ -38,6 +43,7 @@ class ProcessManager {
 
     private fun generateProcess(cmd: List<String>): Process {
         return PtyProcessBuilder(cmd.toTypedArray())
+            .setDirectory(fileService.resolve("/").absolutePathString())
             .setEnvironment(
                 mapOf(
                     "TERM" to "xterm"
