@@ -11,7 +11,7 @@ plugins {
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
     id("org.jetbrains.kotlin.kapt") version "1.5.20"
     id("com.google.cloud.tools.jib") version "3.1.1"
-    id("com.diffplug.spotless") version "5.14.1"
+    id("com.diffplug.spotless") version "5.14.2"
     kotlin("jvm") version "1.5.20"
     kotlin("plugin.spring") version "1.5.20"
 }
