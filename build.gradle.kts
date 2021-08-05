@@ -73,13 +73,13 @@ jib {
         //image = "replco/polygott:c82c08a720ba1fd537d4fba17eed883ab87c0fd7"
     }
     to {
-        image = "ghcr.io/henningcash/codefreak-cloud-companion"
+        image = "ghcr.io/codefreak/codefreak-cloud-companion"
     }
     container {
         volumes = listOf(
             "/code"
         )
-        labels.put("org.opencontainers.image.source", "https://github.com/HenningCash/codefreak-cloud-companion")
+        labels.put("org.opencontainers.image.source", "https://github.com/codefreak/codefreak-cloud-companion")
     }
     pluginExtensions {
         pluginExtension {
