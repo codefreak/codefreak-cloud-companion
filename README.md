@@ -17,17 +17,19 @@ Each user receives its own "workspace" on the server which is created from multi
 
 ## Running locally
 The companion is a standard Spring Boot web application which can be run locally for development/testing.
-Please copy the file `src/main/resources/application-dev.yml.dist` to `src/main/resources/application-dev.yml`. 
-To start the webserver on port 8080 (default) run the following command:
+Please copy the file `src/main/resources/application-dev.yml.dist` to `src/main/resources/application-dev.yml` and make sure you are running the application with the `dev` profile.
+
+To start the webserver on port 8080 (default) using Gradle run the following command:
 ```shell
-./gradlew bootRun
+SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
 ```
 
 ## Endpoints
 
 ### GraphQL (`/graphql`)
-The GraphQL server is available at `/graphql`.
-During development, you can use the GraphiQL playground for testing at `/playground`.
+The GraphQL server is available at `/graphql`. You can find the full schema at [`src/main/resources/graphql/schema.graphqls`](src/main/resources/graphql/schema.graphqls).
+
+During development, you can use the GraphiQL playground for testing at `/playground`. Make sure you have set up your `src/main/resources/application-dev.yml` correctly!
 The server accepts both `POST` and Websocket queries. 
 The GQL websocket protocol is based on [`graphql-ws`](https://github.com/enisdenjo/graphql-ws)!
 
