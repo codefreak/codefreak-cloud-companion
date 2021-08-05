@@ -9,6 +9,7 @@ It is shipped as self-contained container image that can be run on Docker, Kuber
 Current Features:
 * Download/Upload files
 * List and watch project files on the server
+* Start/Stop processes and attach to them via websockets
 
 ## Context
 The companion is used for Code FREAK's *Cloud Workspaces* feature which allows writing code in your browser and running
@@ -69,7 +70,10 @@ The will serve the workspace file (if it exists) with the one of the following m
 * The proper mime type for images (mime starts with `image/*`)
 * `application/octet-stream` for everything else
 
+### `GET /process/{process-id}`
+The request will be upgraded to Websocket!
 
+After starting a process using the GraphQL `startProcess` mutation you can attach to the process via this endpoint. Please supply the process-id returned from the start mutation.
 
 ## Testing
 ```shell

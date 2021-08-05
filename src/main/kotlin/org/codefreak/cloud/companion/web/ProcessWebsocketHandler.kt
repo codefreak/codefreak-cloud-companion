@@ -1,7 +1,8 @@
-package org.codefreak.cloud.companion
+package org.codefreak.cloud.companion.web
 
 import java.util.UUID
 import org.apache.commons.io.IOUtils
+import org.codefreak.cloud.companion.ProcessManager
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.socket.WebSocketHandler
