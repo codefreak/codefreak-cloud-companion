@@ -42,7 +42,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 
-    implementation("commons-io:commons-io:2.10.0")
+    implementation("commons-io:commons-io:2.11.0")
     implementation("org.apache.commons:commons-compress:1.21")
     implementation("org.apache.tika:tika-core:1.26")
     // https://packages.jetbrains.team/maven/p/ij/intellij-dependencies/org/jetbrains/pty4j/pty4j/
