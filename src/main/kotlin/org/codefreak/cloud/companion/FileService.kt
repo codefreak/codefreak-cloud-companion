@@ -28,6 +28,7 @@ import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.http.MediaType
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Service
+import org.springframework.util.AntPathMatcher
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
@@ -52,6 +53,8 @@ class FileService(
 ) {
     private val basePath = Paths.get(basePathString)
     val fileSystem: FileSystem = basePath.fileSystem
+
+    private val antPathMatcher = AntPathMatcher()
 
     fun resolve(path: String): Path {
         return basePath.resolve(sanitizePath(path))
@@ -95,23 +98,33 @@ class FileService(
 
     fun saveUpload(file: FilePart): Mono<Void> {
         return Mono.just(file)
-            .map {
-                // make sure parent dir exists to allow uploading nested file structures
-                val parentDir = resolve(file.filename()).parent
-                if (parentDir != null && !parentDir.exists()) {
-                    try {
-                        Files.createDirectories(parentDir)
-                    } catch (e: FileSystemException) {
-                        throw FileServiceException("Could not create parent dirs of ${file.filename()}: ${e.message}")
-                    }
+            .map { part ->
+                ensureParentExists(part.filename()) {
+                    part.transferTo(it)
                 }
-                it
-            }.flatMap {
-                it.transferTo(resolve(it.filename()))
-            }
+            }.then()
     }
 
-    fun createTar(bufferFactory: DataBufferFactory): Flux<DataBuffer> {
+    fun ensureParentExists(filePath: String, consume: (it: Path) -> Unit) {
+        val path = resolve(filePath)
+        if (path.parent != null && !path.parent.exists()) {
+            try {
+                Files.createDirectories(path.parent)
+            } catch (e: FileSystemException) {
+                throw FileServiceException("Could not create parent dirs of $path: ${e.message}")
+            }
+        }
+        return consume(path)
+    }
+
+    fun createTar(bufferFactory: DataBufferFactory, filterPattern: String?) = createTar(bufferFactory) {
+        filterPattern == null || antPathMatcher.match(filterPattern, relativePath(it))
+    }
+
+    fun createTar(
+        bufferFactory: DataBufferFactory,
+        prerequisite: (file: Path) -> Boolean = { true }
+    ): Flux<DataBuffer> {
         return Flux.create { sink ->
             val buffer = bufferFactory.allocateBuffer()
             buffer.asOutputStream().use { bufferStream ->
@@ -119,6 +132,7 @@ class FileService(
                 Files.walk(resolve("/"))
                     // exclude root directory
                     .filter { !it.isSameFileAs(basePath) }
+                    .filter(prerequisite)
                     // TODO: symlinks are created as regular files
                     .forEach { file ->
                         val entry = outputStream.createArchiveEntry(file, relativePath(file).trimStart('/'))
@@ -151,16 +165,9 @@ class FileService(
         if (entry.isDirectory) {
             Files.createDirectories(resolve(entry.name))
         } else {
-            val name = resolve(entry.name)
-            val parentDir = name.parent
-            if (parentDir != null && !parentDir.exists()) {
-                try {
-                    Files.createDirectories(parentDir)
-                } catch (e: FileSystemException) {
-                    throw FileServiceException("Could not create parent dirs of $name: ${e.message}")
-                }
+            ensureParentExists(entry.name) {
+                Files.newOutputStream(it).use { IOUtils.copy(archiveInputStream, it) }
             }
-            Files.newOutputStream(name).use { IOUtils.copy(archiveInputStream, it) }
         }
     }
 

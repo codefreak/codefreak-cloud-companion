@@ -8,6 +8,7 @@ import org.springframework.http.server.reactive.ServerHttpResponse
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
@@ -29,9 +30,15 @@ class FilesTarController {
         return fileService.overrideFilesByTar(exchange.request.body).then()
     }
 
+    /**
+     * Download a tar archive containing all project files.
+     * Optional parameter "filter" allows to specify an ant-style path pattern so the archive will
+     * only contain files/directories matching the pattern.
+     */
     @GetMapping(produces = ["application/x-tar"])
-    fun downloadArchive(response: ServerHttpResponse): Mono<Void> {
+    fun downloadArchive(response: ServerHttpResponse, @RequestParam filter: String? = null): Mono<Void> {
         response.headers["Content-Disposition"] = "filename=\"files.tar\""
-        return response.writeWith(fileService.createTar(response.bufferFactory()))
+        // ensure pattern has a leading slash because our project-paths always start with a leading slash
+        return response.writeWith(fileService.createTar(response.bufferFactory(), filter?.trimStart('/')?.let { "/$it" }))
     }
 }

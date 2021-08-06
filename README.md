@@ -70,6 +70,14 @@ The will serve the workspace file (if it exists) with the one of the following m
 * The proper mime type for images (mime starts with `image/*`)
 * `application/octet-stream` for everything else
 
+### `GET /files-tar`
+Download a tar archive that contains all project files.
+You can optionally specify a `?filter=` parameter which allows narrowing down the files contained in the final archive. So `/files-tar?filter=**/*.txt` will make the archive contain only all `.txt` files. The pattern must be a valid [AntPathMatcher](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/util/AntPathMatcher.html).
+
+### `POST /files-tar`
+Upload a tar archive which WILL REPLACE ALL EXISTING PROJECT FILES! So uploading an empty archive will delete everything!
+The body of the request must be a single 3valid `application/x-tar` archive (no multipart request, form-data etc. needed!).
+
 ### `GET /process/{process-id}`
 The request will be upgraded to Websocket!
 
