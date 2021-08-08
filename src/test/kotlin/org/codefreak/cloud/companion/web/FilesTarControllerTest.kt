@@ -12,6 +12,9 @@ import org.apache.commons.io.IOUtils
 import org.codefreak.cloud.companion.CompanionConfig
 import org.codefreak.cloud.companion.FileService
 import org.codefreak.cloud.companion.PosixTarArchiveOutputStream
+import org.hamcrest.CoreMatchers.equalTo
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -59,11 +62,12 @@ internal class FilesTarControllerTest {
         body.responseBody?.let {
             val archive = TarArchiveInputStream(it.inputStream())
             val entries = generateSequence { archive.nextTarEntry }.toList()
-            Assertions.assertEquals(3, entries.size)
-            // hopefully the order of files is consistent...
-            Assertions.assertEquals("sub-dir/", entries[0].name)
-            Assertions.assertEquals("sub-dir/file.txt", entries[1].name)
-            Assertions.assertEquals("test.txt", entries[2].name)
+            assertThat(entries, Matchers.hasSize(3))
+            assertThat(entries, Matchers.contains(
+                Matchers.hasProperty("name", equalTo("sub-dir/")),
+                Matchers.hasProperty("name", equalTo("sub-dir/file.txt")),
+                Matchers.hasProperty("name", equalTo("test.txt"))
+            ))
         } ?: Assertions.fail("No content returned from server")
     }
 
@@ -82,9 +86,11 @@ internal class FilesTarControllerTest {
         body.responseBody?.let {
             val archive = TarArchiveInputStream(it.inputStream())
             val entries = generateSequence { archive.nextTarEntry }.toList()
-            Assertions.assertEquals(2, entries.size)
-            Assertions.assertEquals("sub-dir/file.txt", entries[0].name)
-            Assertions.assertEquals("test.txt", entries[1].name)
+            assertThat(entries, Matchers.hasSize(2))
+            assertThat(entries, Matchers.contains(
+                Matchers.hasProperty("name", equalTo("sub-dir/file.txt")),
+                Matchers.hasProperty("name", equalTo("test.txt"))
+            ))
         } ?: Assertions.fail("No content returned from server")
     }
 
@@ -108,10 +114,10 @@ internal class FilesTarControllerTest {
             .exchange()
             .expectStatus()
             .isCreated
-        assert(fileService.resolve("/file.txt").exists())
-        assert(fileService.resolve("/file.txt").readText() == "hello world")
-        assert(fileService.resolve("/sub-dir/file.txt").exists())
-        assert(fileService.resolve("/sub-dir/file.txt").readText() == "hello world 2")
+        assertThat(fileService.resolve("/file.txt").exists(), equalTo(true))
+        assertThat(fileService.resolve("/file.txt").readText(), equalTo("hello world"))
+        assertThat(fileService.resolve("/sub-dir/file.txt").exists(), equalTo(true))
+        assertThat(fileService.resolve("/sub-dir/file.txt").readText(), equalTo("hello world 2"))
     }
 
     private fun createArchive(entries: Map<String, String>): ByteArray {

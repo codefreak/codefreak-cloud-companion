@@ -8,8 +8,9 @@ import kotlin.io.path.writeText
 import org.apache.commons.io.FileUtils
 import org.codefreak.cloud.companion.CompanionConfig
 import org.codefreak.cloud.companion.FileService
+import org.hamcrest.CoreMatchers.equalTo
+import org.hamcrest.MatcherAssert.assertThat
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -118,7 +119,7 @@ internal class FileControllerTest {
             .exchange()
             .expectStatus()
             .isCreated
-        Assertions.assertTrue(fileService.resolve("/file123.txt").exists())
+        assertThat(fileService.resolve("/file123.txt").exists(), equalTo(true))
     }
 
     @Test
@@ -129,7 +130,7 @@ internal class FileControllerTest {
             .exchange()
             .expectStatus()
             .isCreated
-        Assertions.assertTrue(fileService.resolve("/file test.txt").exists())
+        assertThat(fileService.resolve("/file test.txt").exists(), equalTo(true))
     }
 
     @Test
@@ -140,7 +141,7 @@ internal class FileControllerTest {
             .exchange()
             .expectStatus()
             .isCreated
-        Assertions.assertTrue(fileService.resolve("/sub/dir/file123.txt").exists())
+        assertThat(fileService.resolve("/sub/dir/file123.txt").exists(), equalTo(true))
     }
 
     @Test
@@ -152,7 +153,7 @@ internal class FileControllerTest {
             .exchange()
             .expectStatus()
             .isBadRequest
-        Assertions.assertTrue(fileService.resolve("/sub").isRegularFile())
+        assertThat(fileService.resolve("/sub").isRegularFile(), equalTo(true))
     }
 
     @Test
