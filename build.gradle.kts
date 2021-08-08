@@ -50,7 +50,10 @@ dependencies {
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-test") {
+        // we are using Hamcrest matchers and assertj's "assertThat" is annoying in autocompletion
+        exclude(group = "org.assertj", module = "assertj-core")
+    }
     testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     testImplementation("org.springframework.graphql:spring-graphql-test:1.0.0-SNAPSHOT")
     testImplementation("junit:junit:4.13.2")
