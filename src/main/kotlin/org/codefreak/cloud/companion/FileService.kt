@@ -98,14 +98,14 @@ class FileService(
 
     fun saveUpload(file: FilePart): Mono<Void> {
         return Mono.just(file)
-            .map { part ->
-                ensureParentExists(part.filename()) {
+            .flatMap { part ->
+                withParentPathExists(part.filename()) {
                     part.transferTo(it)
                 }
             }.then()
     }
 
-    fun ensureParentExists(filePath: String, consume: (it: Path) -> Unit) {
+    fun <T> withParentPathExists(filePath: String, consume: (it: Path) -> T): T {
         val path = resolve(filePath)
         if (path.parent != null && !path.parent.exists()) {
             try {
@@ -165,7 +165,7 @@ class FileService(
         if (entry.isDirectory) {
             Files.createDirectories(resolve(entry.name))
         } else {
-            ensureParentExists(entry.name) {
+            withParentPathExists(entry.name) {
                 Files.newOutputStream(it).use { IOUtils.copy(archiveInputStream, it) }
             }
         }

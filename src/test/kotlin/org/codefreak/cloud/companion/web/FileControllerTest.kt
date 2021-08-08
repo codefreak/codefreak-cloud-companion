@@ -9,6 +9,7 @@ import org.apache.commons.io.FileUtils
 import org.codefreak.cloud.companion.CompanionConfig
 import org.codefreak.cloud.companion.FileService
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -117,7 +118,7 @@ internal class FileControllerTest {
             .exchange()
             .expectStatus()
             .isCreated
-        assert(fileService.resolve("/file123.txt").exists())
+        Assertions.assertTrue(fileService.resolve("/file123.txt").exists())
     }
 
     @Test
@@ -128,7 +129,7 @@ internal class FileControllerTest {
             .exchange()
             .expectStatus()
             .isCreated
-        assert(fileService.resolve("/file test.txt").exists())
+        Assertions.assertTrue(fileService.resolve("/file test.txt").exists())
     }
 
     @Test
@@ -139,7 +140,7 @@ internal class FileControllerTest {
             .exchange()
             .expectStatus()
             .isCreated
-        assert(fileService.resolve("/sub/dir/file123.txt").exists())
+        Assertions.assertTrue(fileService.resolve("/sub/dir/file123.txt").exists())
     }
 
     @Test
@@ -151,7 +152,7 @@ internal class FileControllerTest {
             .exchange()
             .expectStatus()
             .isBadRequest
-        assert(fileService.resolve("/sub").isRegularFile())
+        Assertions.assertTrue(fileService.resolve("/sub").isRegularFile())
     }
 
     @Test

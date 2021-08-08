@@ -47,7 +47,7 @@ internal class FilesTarControllerTest {
     @Test
     fun testDownload() {
         fileService.resolve("/test.txt").writeText("Hello World")
-        fileService.ensureParentExists("/sub-dir/file.txt") { it.writeText("Hello World") }
+        fileService.withParentPathExists("/sub-dir/file.txt") { it.writeText("Hello World") }
         val body = client.get()
             .uri("/files-tar")
             .accept(MediaType.parseMediaType("application/x-tar"))
@@ -70,7 +70,7 @@ internal class FilesTarControllerTest {
     @Test
     fun testDownloadWithFilter() {
         fileService.resolve("/test.txt").writeText("Hello World")
-        fileService.ensureParentExists("/sub-dir/file.txt") { it.writeText("Hello World") }
+        fileService.withParentPathExists("/sub-dir/file.txt") { it.writeText("Hello World") }
         val body = client.get()
             .uri("/files-tar?filter=**/*.txt")
             .accept(MediaType.parseMediaType("application/x-tar"))
