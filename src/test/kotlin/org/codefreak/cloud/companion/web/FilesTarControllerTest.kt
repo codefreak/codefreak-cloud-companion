@@ -72,7 +72,29 @@ internal class FilesTarControllerTest {
     }
 
     @Test
-    fun testDownloadWithFilter() {
+    fun testDownloadWithFileFilter() {
+        fileService.resolve("/test.txt").writeText("Hello World")
+        fileService.withParentPathExists("/sub-dir/file.txt") { it.writeText("Hello World") }
+        val body = client.get()
+            .uri("/files-tar?filter=test.txt")
+            .accept(MediaType.parseMediaType("application/x-tar"))
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody<ByteArray>()
+            .returnResult()
+        body.responseBody?.let {
+            val archive = TarArchiveInputStream(it.inputStream())
+            val entries = generateSequence { archive.nextTarEntry }.toList()
+            assertThat(entries, Matchers.hasSize(1))
+            assertThat(entries, Matchers.contains(
+                Matchers.hasProperty("name", equalTo("test.txt"))
+            ))
+        } ?: Assertions.fail("No content returned from server")
+    }
+
+    @Test
+    fun testDownloadPatternFilter() {
         fileService.resolve("/test.txt").writeText("Hello World")
         fileService.withParentPathExists("/sub-dir/file.txt") { it.writeText("Hello World") }
         val body = client.get()
