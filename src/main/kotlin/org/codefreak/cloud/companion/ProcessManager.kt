@@ -44,13 +44,18 @@ class ProcessManager {
     private fun generateProcess(cmd: List<String>): Process {
         return PtyProcessBuilder(cmd.toTypedArray())
             .setDirectory(fileService.resolve("/").absolutePathString())
-            .setEnvironment(
-                mapOf(
-                    "TERM" to "xterm"
-                )
-            )
-            // redirect stderr to stdout so we only have to subscribe one
+            .setEnvironment(getEnvironment())
+            // redirect stderr to stdout, so we only have to subscribe to one stream
             .setRedirectErrorStream(true)
             .start()
+    }
+
+    /**
+     * Inherit the parent environment variables but remove kubernetes master discovery variables
+     * as they cannot be removed with enableServiceLinks=false.
+     */
+    private fun getEnvironment(): Map<String, String> {
+        return System.getenv()
+            .filterKeys { !it.startsWith("KUBERNETES_") } + mapOf("TERM" to "xterm")
     }
 }
