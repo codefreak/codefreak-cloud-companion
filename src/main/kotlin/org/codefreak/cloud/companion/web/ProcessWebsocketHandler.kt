@@ -5,6 +5,7 @@ import org.apache.commons.io.IOUtils
 import org.codefreak.cloud.companion.ProcessManager
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import org.springframework.web.reactive.socket.CloseStatus
 import org.springframework.web.reactive.socket.WebSocketHandler
 import org.springframework.web.reactive.socket.WebSocketMessage
 import org.springframework.web.reactive.socket.WebSocketSession
@@ -35,6 +36,10 @@ class ProcessWebsocketHandler : WebSocketHandler {
         val processOutput = session.send(
             processManager.getStdout(processId).map {
                 WebSocketMessage(WebSocketMessage.Type.BINARY, it)
+            }.doOnTerminate {
+                // close the connection when stdout closes
+                // we do not have to do this for stdin because stdin and stdout will (hopefully) close simultaneously
+                session.close(CloseStatus.NORMAL)
             }
         )
 
