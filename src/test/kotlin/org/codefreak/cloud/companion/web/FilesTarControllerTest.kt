@@ -63,7 +63,7 @@ internal class FilesTarControllerTest {
             val archive = TarArchiveInputStream(it.inputStream())
             val entries = generateSequence { archive.nextTarEntry }.toList()
             assertThat(entries, Matchers.hasSize(3))
-            assertThat(entries, Matchers.contains(
+            assertThat(entries, Matchers.containsInAnyOrder(
                 Matchers.hasProperty("name", equalTo("sub-dir/")),
                 Matchers.hasProperty("name", equalTo("sub-dir/file.txt")),
                 Matchers.hasProperty("name", equalTo("test.txt"))
@@ -87,7 +87,7 @@ internal class FilesTarControllerTest {
             val archive = TarArchiveInputStream(it.inputStream())
             val entries = generateSequence { archive.nextTarEntry }.toList()
             assertThat(entries, Matchers.hasSize(1))
-            assertThat(entries, Matchers.contains(
+            assertThat(entries, Matchers.containsInAnyOrder(
                 Matchers.hasProperty("name", equalTo("test.txt"))
             ))
         } ?: fail { "No content returned from server" }
@@ -109,7 +109,7 @@ internal class FilesTarControllerTest {
             val archive = TarArchiveInputStream(it.inputStream())
             val entries = generateSequence { archive.nextTarEntry }.toList()
             assertThat(entries, Matchers.hasSize(2))
-            assertThat(entries, Matchers.contains(
+            assertThat(entries, Matchers.containsInAnyOrder(
                 Matchers.hasProperty("name", equalTo("sub-dir/file.txt")),
                 Matchers.hasProperty("name", equalTo("test.txt"))
             ))
