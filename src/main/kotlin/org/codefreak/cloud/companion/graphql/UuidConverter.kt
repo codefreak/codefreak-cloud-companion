@@ -5,20 +5,22 @@ import graphql.schema.Coercing
 import graphql.schema.CoercingParseLiteralException
 import graphql.schema.CoercingParseValueException
 import graphql.schema.GraphQLScalarType
-import graphql.schema.idl.RuntimeWiring
 import java.util.UUID
-import org.springframework.graphql.boot.RuntimeWiringBuilderCustomizer
+import org.springframework.graphql.boot.GraphQlSourceBuilderCustomizer
+import org.springframework.graphql.execution.GraphQlSource
 import org.springframework.stereotype.Component
 
 @Component
-class UUIDWiring : RuntimeWiringBuilderCustomizer {
-    override fun customize(builder: RuntimeWiring.Builder) {
-        builder.scalar(
-            GraphQLScalarType.newScalar()
-                .name("UUID")
-                .coercing(UuidConverter())
-                .build()
-        )
+class UUIDWiring : GraphQlSourceBuilderCustomizer {
+    override fun customize(builder: GraphQlSource.Builder) {
+        builder.runtimeWiringConfigurer {
+            it.scalar(
+                GraphQLScalarType.newScalar()
+                    .name("UUID")
+                    .coercing(UuidConverter())
+                    .build()
+            )
+        }
     }
 }
 

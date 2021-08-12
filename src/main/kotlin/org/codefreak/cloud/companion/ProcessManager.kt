@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 
 @Service
@@ -22,6 +23,21 @@ class ProcessManager {
         val uid = UUID.randomUUID()
         processMap[uid] = generateProcess(cmd)
         return uid
+    }
+
+    fun getProcesses(): List<Pair<UUID, Process>> {
+        return processMap.entries.map { (k, v) -> Pair(k, v) }
+    }
+
+    fun purgeProcess(id: UUID): Mono<Process> {
+        return Mono.justOrEmpty(processMap.remove(id))
+            .flatMap { process ->
+                process.destroyForcibly()
+                process.waitForMono().map { process }
+            }.map {
+                outputStreamCache.remove(id)
+                it
+            }
     }
 
     fun getProcess(uid: UUID): Process {

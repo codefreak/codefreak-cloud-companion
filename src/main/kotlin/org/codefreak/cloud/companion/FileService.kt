@@ -74,8 +74,7 @@ class FileService(
      * https://stackoverflow.com/a/11182515/1526257.
      * So notifications for changes may take some time if you are running this on MacOS.
      */
-    fun watchDirectory(path: String): Flux<WatchEvent<*>> {
-        val directory = resolve(path)
+    fun watchDirectory(directory: Path): Flux<WatchEvent<*>> {
         if (!directory.isDirectory()) {
             return Flux.error(IllegalArgumentException("$directory is not a directory"))
         }

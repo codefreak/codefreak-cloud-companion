@@ -1,16 +1,17 @@
-package org.codefreak.cloud.companion.graphql
+package org.codefreak.cloud.companion.graphql.api
 
 import java.time.Duration
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
 import kotlin.io.path.writeText
 import org.codefreak.cloud.companion.FileService
+import org.codefreak.cloud.companion.graphql.BasicGraphqlTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import reactor.test.StepVerifier
 
-internal class FilesQueryTest(
+internal class FilesControllerTest(
     @Autowired private val fileService: FileService
 ) : BasicGraphqlTest() {
 

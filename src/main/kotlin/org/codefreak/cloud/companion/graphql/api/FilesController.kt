@@ -1,6 +1,5 @@
 package org.codefreak.cloud.companion.graphql.api
 
-import graphql.schema.idl.RuntimeWiring
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
@@ -10,36 +9,20 @@ import org.codefreak.cloud.companion.graphql.model.FileSystemEvent
 import org.codefreak.cloud.companion.graphql.model.FileSystemEventType
 import org.codefreak.cloud.companion.graphql.model.FileSystemNode
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.graphql.boot.RuntimeWiringBuilderCustomizer
-import org.springframework.stereotype.Component
+import org.springframework.graphql.data.method.annotation.Argument
+import org.springframework.graphql.data.method.annotation.GraphQlController
+import org.springframework.graphql.data.method.annotation.QueryMapping
+import org.springframework.graphql.data.method.annotation.SubscriptionMapping
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
-@Component
-class FilesDataWiring(
-    private val filesQuery: FilesQuery,
-    private val filesSubscription: FilesSubscription
-) : RuntimeWiringBuilderCustomizer {
-    override fun customize(builder: RuntimeWiring.Builder) {
-        builder.type("Query") { wiring ->
-            wiring.dataFetcher("listFiles") { env ->
-                filesQuery.listFiles(env.getArgument("path"))
-            }
-        }
-        builder.type("Subscription") { wiring ->
-            wiring.dataFetcher("watchFiles") { env ->
-                filesSubscription.watchFiles(env.getArgument("path"))
-            }
-        }
-    }
-}
-
-@Component
-class FilesQuery {
+@GraphQlController
+class FilesController {
     @Autowired
     lateinit var fileService: FileService
 
-    fun listFiles(path: String): Mono<List<FileSystemNode>> {
+    @QueryMapping
+    fun listFiles(@Argument path: String): Mono<List<FileSystemNode>> {
         return Mono.just(fileService.resolve(path))
             .flatMapMany {
                 when {
@@ -55,20 +38,15 @@ class FilesQuery {
             }
             .collectList()
     }
-}
 
-@Component
-class FilesSubscription {
-    @Autowired
-    lateinit var fileService: FileService
-
-    /**
-     * Watch given directory for changes (new, deleted, modified files).
-     * For new files this will trigger "new" and "modified"
-     */
-    fun watchFiles(path: String): Flux<FileSystemEvent> {
+    @SubscriptionMapping
+        /**
+         * Watch given directory for changes (new, deleted, modified files).
+         * For new files this will trigger "new" and "modified"
+         */
+    fun watchFiles(@Argument path: String): Flux<FileSystemEvent> {
         val dir = fileService.resolve(path)
-        return fileService.watchDirectory(path).map {
+        return fileService.watchDirectory(dir).map {
             val eventPath = it.context() as Path
             FileSystemEvent(
                 fileService.relativePath(dir.resolve(eventPath)),

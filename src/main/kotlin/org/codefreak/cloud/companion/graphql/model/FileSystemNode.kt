@@ -1,7 +1,7 @@
 package org.codefreak.cloud.companion.graphql.model
 
-import graphql.schema.idl.RuntimeWiring
-import org.springframework.graphql.boot.RuntimeWiringBuilderCustomizer
+import org.springframework.graphql.boot.GraphQlSourceBuilderCustomizer
+import org.springframework.graphql.execution.GraphQlSource
 import org.springframework.stereotype.Component
 
 /**
@@ -20,13 +20,15 @@ interface FileSystemNode {
 }
 
 @Component
-class FileSystemNodeResolver : RuntimeWiringBuilderCustomizer {
-    override fun customize(builder: RuntimeWiring.Builder) {
-        builder.type("FileSystemNode") { wiring ->
-            wiring.typeResolver {
-                when (it.getObject<FileSystemNode>()) {
-                    is Directory -> it.schema.getObjectType("Directory")
-                    else -> it.schema.getObjectType("File")
+class FileSystemNodeResolver : GraphQlSourceBuilderCustomizer {
+    override fun customize(builder: GraphQlSource.Builder) {
+        builder.runtimeWiringConfigurer {
+            it.type("FileSystemNode") { wiring ->
+                wiring.typeResolver {
+                    when (it.getObject<FileSystemNode>()) {
+                        is Directory -> it.schema.getObjectType("Directory")
+                        else -> it.schema.getObjectType("File")
+                    }
                 }
             }
         }
