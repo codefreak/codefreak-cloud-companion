@@ -15,10 +15,10 @@ import org.codefreak.cloud.companion.PosixTarArchiveOutputStream
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.context.annotation.Import
@@ -68,7 +68,7 @@ internal class FilesTarControllerTest {
                 Matchers.hasProperty("name", equalTo("sub-dir/file.txt")),
                 Matchers.hasProperty("name", equalTo("test.txt"))
             ))
-        } ?: Assertions.fail("No content returned from server")
+        } ?: fail { "No content returned from server" }
     }
 
     @Test
@@ -90,7 +90,7 @@ internal class FilesTarControllerTest {
             assertThat(entries, Matchers.contains(
                 Matchers.hasProperty("name", equalTo("test.txt"))
             ))
-        } ?: Assertions.fail("No content returned from server")
+        } ?: fail { "No content returned from server" }
     }
 
     @Test
@@ -113,7 +113,7 @@ internal class FilesTarControllerTest {
                 Matchers.hasProperty("name", equalTo("sub-dir/file.txt")),
                 Matchers.hasProperty("name", equalTo("test.txt"))
             ))
-        } ?: Assertions.fail("No content returned from server")
+        } ?: fail { "No content returned from server" }
     }
 
     @Test
