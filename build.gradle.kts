@@ -58,7 +58,7 @@ dependencies {
         exclude(group = "org.assertj", module = "assertj-core")
     }
     testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    testImplementation("org.springframework.graphql:spring-graphql-test:1.0.0-SNAPSHOT")
+    testImplementation("org.springframework.graphql:spring-graphql-test:1.3.2")
     testImplementation("junit:junit:4.13.2")
     testImplementation("io.projectreactor:reactor-test")
 }
