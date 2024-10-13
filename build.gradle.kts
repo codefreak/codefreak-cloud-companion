@@ -49,7 +49,7 @@ dependencies {
     implementation("org.apache.commons:commons-compress:1.21")
     implementation("org.apache.tika:tika-core:1.27")
     // https://packages.jetbrains.team/maven/p/ij/intellij-dependencies/org/jetbrains/pty4j/pty4j/
-    implementation("org.jetbrains.pty4j:pty4j:0.11.5")
+    implementation("org.jetbrains.pty4j:pty4j:0.13.2")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
