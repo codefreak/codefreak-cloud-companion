@@ -10,7 +10,7 @@ buildscript {
 
 plugins {
     id("org.springframework.boot") version "2.5.4"
-    id("io.spring.dependency-management") version "1.0.11.RELEASE"
+    id("io.spring.dependency-management") version "1.1.7"
     id("org.jetbrains.kotlin.kapt") version "1.5.30"
     id("com.google.cloud.tools.jib") version "3.1.4"
     id("com.diffplug.spotless") version "5.14.2"
